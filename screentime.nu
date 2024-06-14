@@ -1,13 +1,15 @@
 #!/usr/bin/env nu
 
-# Hour range in which the device can be used.
+# Hour range in which the device can be used. 
+# You can use lists too: [7 8 9 10 18 19 20 21]
 const ALLOWED_RANGE = 6..21
 
 # Your timezone. See a list of timezones at https://worldtimeapi.org/timezones
 const TIMEZONE = "America/New_York"
 
-# Allowed offline usage time before the computer shuts down.
-const ALLOWED_OFFLINE = 15min 
+# Maximum allowed offline usage time before the computer shuts down.
+# Set to false to never shut down when offline.
+const MAX_OFFLINE = 15min
 
 def main [] {
 	try {
@@ -18,7 +20,7 @@ def main [] {
 			shutdown now
 		}
 	} catch {
-		if (sys host).uptime >= $ALLOWED_OFFLINE {
+		if $MAX_OFFLINE != false and (sys host).uptime >= $MAX_OFFLINE {
 			shutdown now
 		}
 	}
