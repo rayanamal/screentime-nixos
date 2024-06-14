@@ -2,9 +2,10 @@
 
 # Hour range in which the device can be used. 
 # You can use lists too: [7 8 9 10 18 19 20 21]
-const ALLOWED_RANGE = 6..21
+const ALLOWED_HOURS = 6..21
 
-# Your timezone. See a list of timezones at https://worldtimeapi.org/timezones
+# Your timezone. See a list of timezones by running this script with:
+# ./screentime.nu list-timezones
 const TIMEZONE = "America/New_York"
 
 # Maximum allowed offline usage time before the computer shuts down.
@@ -13,10 +14,10 @@ const MAX_OFFLINE = 15min
 
 def main [] {
 	try {
-		let data = http get ('https://worldtimeapi.org/api/timezone/' + $TIMEZONE)
-		let time = $data | get datetime | into datetime
+		ping -c 1 8.8.8.8 | ignore
+		let time = date now | date to-timezone $TIMEZONE
 		let hour = $time | format date '%H' | into int
-		if $hour not-in $ALLOWED_RANGE {
+		if $hour not-in $ALLOWED_HOURS {
 			shutdown now
 		}
 	} catch {
@@ -24,4 +25,8 @@ def main [] {
 			shutdown now
 		}
 	}
+}
+
+def "main list-timezones" [] {
+	date list-timezone
 }
