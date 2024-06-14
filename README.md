@@ -1,4 +1,6 @@
-Some screen time features implemented for NixOS.
+Screen Time features for NixOS. 
+
+For now, it's not a proper Nix package, just a bunch of configuration options along with a script.
 
 ## Features
 
