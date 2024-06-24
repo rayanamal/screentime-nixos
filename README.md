@@ -1,3 +1,5 @@
+### Warning! Currently systems with Wi-Fi connectivity as opposed to Ethernet may have spontaneous system shutdown issues, especially upon waking up from sleep. A fix is underway.
+
 Screen Time features for NixOS. 
 
 For now, it's not a proper Nix package, just a bunch of configuration options along with a script.
