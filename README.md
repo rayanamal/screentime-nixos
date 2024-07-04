@@ -1,7 +1,3 @@
-#### Warning! Currently systems with Wi-Fi connectivity as opposed to Ethernet have spontaneous system shutdown issues, especially upon waking up from sleep. A fix is underway.
-
-___
-<br>
 Screen Time features for NixOS. 
 
 For now, it's not a proper Nix package, just a bunch of configuration options along with a script.
@@ -36,9 +32,15 @@ In order to achieve this and still be able to practically use your machine, do t
 sudo git clone "https://github.com/rayanamal/screentime-nixos.git"
 ```
 
-2. Edit the constants at the start of the `screentime.nu` file to set your timezone, productive hours and allowed maximum offline usage time.
+2. Edit the constants at the start of the `screentime.nu` file to set your timezone, productive hours and allowed maximum offline usage time. Allowed maximum offline usage time counts from the last time the computer was online. It doesn't count minutes from boot. You're given 7 minutes regardless every time you boot, for use in an emergency.
 
-3. Add this to your `/etc/nixos/configuration.nix`:
+3. Change the cloned repository's ownership.
+
+```bash
+chown -R root:root /path/to/repo/
+```
+
+4. Add this to your `/etc/nixos/configuration.nix`:
 ```nix
   systemd.services.screentime = {
     startAt = "minutely";
@@ -48,14 +50,14 @@ sudo git clone "https://github.com/rayanamal/screentime-nixos.git"
 ```
 edit it to put the path to cloned repository.
 
-4. Make sure `nushell` is available to the root user. You can add it with:
+5. Make sure `nushell` is available to the root user. You can add it with:
 ```nix
  environment.systemPackages = with pkgs; [
     nushell
  ]
 ```
 
-5. Add the following to your `configuration.nix`. Tailor the website list for your browsing habits.
+6. Add the following to your `configuration.nix`. Tailor the website list for your own browsing habits.
 ```nix
   programs.chromium = { 
     enable = true;
@@ -70,7 +72,7 @@ edit it to put the path to cloned repository.
     };
   };
 
-# Everything is blocked on Firefox, so that you don't use it  
+# Everything is blocked on Firefox, so that you don't use it
   programs.firefox = {
   	enable = true;
     policies.WebsiteFilter = {
