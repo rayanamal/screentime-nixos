@@ -21,7 +21,7 @@ def main [] {
 		date now | save $file
 	}
 	let online = try {
-			ping -c 1 8.8.8.8 | save /dev/null
+			ping -c 1 8.8.8.8 | ignore
 			true
 		} catch { false }
 	if $online {
