@@ -38,7 +38,7 @@ The script `screentime.nu` won't trust system clock unless you are online, to pr
 sudo git clone "https://github.com/rayanamal/screentime-nixos.git"
 ```
 
-2. Edit the constants at the start of the `screentime.nu` file to set your timezone, productive hours and allowed maximum offline usage time. Allowed maximum offline usage time counts from the last time the computer was online. You're given 7 minutes regardless every time you boot, for use in an emergency.
+2. Edit the constants at the start of the `screentime.nu` file to set your timezone, productive hours and allowed maximum offline usage time. Allowed maximum offline usage time counts from the last time the computer was online. You're given 5 minutes regardless every time you boot, for use in an emergency.
 
 3. Change the cloned repository's ownership.
 
