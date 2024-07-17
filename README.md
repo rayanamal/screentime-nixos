@@ -108,3 +108,8 @@ For many people, there is no need for Screen Time. They're busy enough with thei
 Let me know how this project worked for you!
 
 I'm open to contributions.
+
+## TODOs
+
+- We can rebuild nixos with the same delay (after change of configuration.nix) that is in the password and impulse control will work.
+- More flexibility in allowed times. Allowed (online) usage time for emergencies etc.
