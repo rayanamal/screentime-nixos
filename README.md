@@ -41,12 +41,12 @@ sudo git clone "https://github.com/rayanamal/screentime-nixos.git"
 2. Edit the constants at the start of the `screentime.nu` file:
 	- `TIMEZONE`: Set your timezone.
 	- `ALLOWED_HOURS`: Your productive hours. You'll be able to use your computer in this time range. 
-	- `EXTRA_MINS`: Allowed maxiumum extra time per day. You'll be able to use your computer outside of `ALLOWED_HOURS` for the duration specified here. It's intended to be used for emergencies. 
-	- `MAX_OFFLINE`: Allowed maximum offline usage time. You'll be allowed to use the computer when offline for the duration specifed here. 
+	- `EXTRA_MINS`: Allowed maxiumum extra time per day. You'll be able to use your computer outside of `ALLOWED_HOURS` for the duration specified here. Intended to be used for emergencies. 
+	- `MAX_OFFLINE`: Allowed maximum offline usage time. You'll be allowed to use the computer when offline for the duration specifed here.
 
-You're given 5 minutes every time you boot independent of all settings.
+You're given 5 minutes every time you boot independent of all these settings.
 
-3. Change the cloned repository's ownership.
+3. Change the cloned repository's ownership to `root` if it's not already:
 
 ```bash
 chown -R root:root /path/to/screentime-nixos/
@@ -59,11 +59,11 @@ chown -R root:root /path/to/screentime-nixos/
   	serviceConfig = {
       Restart = "on-failure";
     };
-    script = "/home/username/.screentime.nu";
+    script = "/path/to/repo/.screentime.nu";
     environment.PATH = lib.mkForce "/run/current-system/sw/bin";
   };
 ```
-Edit it to put the path to cloned repository.
+Edit `path/to/repo/` to put the correct path to cloned repository.
 
 5. Make sure `nushell` is available to the root user. You can add it with:
 ```nix
@@ -82,7 +82,6 @@ Edit it to put the path to cloned repository.
         "youtube.com"
         "lobste.rs"
         "reddit.com"
-        "instagram.com"
       ];
     };
   };
