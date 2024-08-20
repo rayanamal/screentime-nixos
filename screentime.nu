@@ -20,7 +20,7 @@ const DIR = '/var/lib/screentime-nixos/'
 def shutdown [] {
 	if (sys host).uptime >= 5min {
 		# print 'shutdown now' # for testing
-		shutdown now
+		^shutdown now
 	}
 }
 
