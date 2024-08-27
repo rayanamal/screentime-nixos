@@ -1,74 +1,112 @@
 #!/usr/bin/env nu
 
-# Hour range in which the device can be used. 
-# You can use a list too: [7 8 9 10 18 19 20 21]
-const ALLOWED_HOURS = 6..21
+# Set your configuration here!
 
-# Your timezone. See a list of timezones by running this script with:
+const USERS: list<string> = []
+# A list of the usernames to terminate upon exceeding time limits.
+# Other users will remain unaffected.
+# Examples: 
+# - ['alice']
+# - ['bob' 'carl' 'dan']    
+# Note that there's no comma between list items!
+
+const ALLOWED_HOURS = 6..16
+# Hour range in which the device can be used. Examples:
+# - 6..21                    (A range denoted as start..end)
+# - [7 8 9 10 20 21]         (You can use a list too!)
+
+const TIMEZONE: string = "Europe/London"
+# Your timezone. See a list of timezones by running this script with: 
 # ./screentime.nu list-timezones
-const TIMEZONE = "Europe/London"
+# Example: "Europe/London"
 
-# Maximum allowed offline usage time before the computer shuts down.
-const MAX_OFFLINE = 15min
+const MAX_OFFLINE: duration = 15min
+# Maximum allowed offline usage time per day.
 
-# Maximum allowed extra time outside of $ALLOWED_HOURS.
-const EXTRA_MINS = 15min
+const EXTRA_MINS: duration = 30min
+# Maximum allowed extra time per day outside of $ALLOWED_HOURS you have defined.
 
-# Directory in which usage data is saved
-const DIR = '/var/lib/screentime-nixos/'						
+# That's it! You can also change the following optional settings:
 
-def shutdown [] {
-	if (sys host).uptime >= 5min {
-		# print 'shutdown now' # for testing
-		^shutdown now
-	}
-}
+const LIMIT_RESET_HOUR: string = "6am"
+# The hour at which the extra time and offline time limit counters reset every day.
 
-let offline_file = $DIR | path join 'offline-mins.nuon'
-let extra_file = $DIR | path join 'extra-mins.nuon'
+# const DIR: path = '/var/lib/screentime-nixos'
+const DIR: path = './hehe/'
+# The directory in which data files are saved.
+
+-----------------------------------------------------------
 
 mkdir $DIR
 
-if not ($offline_file | path exists) {
-	0 | save $offline_file
+let data_file: path = ($DIR | path join 'data.nuon')
+if not ($data_file | path exists) {
+	{ 
+		extra: 0min, 
+		offline: 0min,
+		last_reset: ($LIMIT_RESET_HOUR | into datetime | into int)
+	} | save $data_file
 }
 
-if not ($extra_file | path exists) {
-	0 | save $extra_file
-}
+def main [] nothing -> nothing {
+	alias notify = try { notify -a "screentime-nixos" -s "1 minute left to termination" -t "Your user session will be terminated in 60 seconds." --timeout 60sec }
+	notify
 
-def main [] {
+	let last_reset = (v last_reset | into datetime)
+	mut next_reset = $last_reset + 1day
+
 	loop {
-		let online = try {
+		let online: bool = try {
 				ping -c 1 8.8.8.8 | ignore
 				true
 			} catch { false }
 		if $online {
-			0 | save -f $offline_file
-			let hour = date now | format date '%H' | into int
+			let hour: int = (date now | format date '%H' | into int)
 			if $hour not-in $ALLOWED_HOURS {
-				let extra_mins = (open $extra_file) + 1
-				$extra_mins | save -f $extra_file
-				let extra_dur = $extra_mins | into duration -u min   
-				if $extra_dur >= $EXTRA_MINS {
-					shutdown
+				set extra ((v extra) + 1min)	
+				if (v extra) == 1min or (v extra) > $EXTRA_MINS {
+					block
+				} else if (v extra) == $EXTRA_MINS {
+					notify
 				}
-			} else if $hour in $ALLOWED_HOURS {
-				0 | save -f $extra_file
+			}
+			if (date now) > $next_reset {
+				set last_reset ($next_reset | into int)
+				$next_reset = $next_reset + 1day
+				set extra 0min
+				set offline 0min
 			}
 		} else if not $online {
-			let offline_mins = (open $offline_file) + 1
-			$offline_mins | save -f $offline_file
-			let offline_dur = $offline_mins | into duration -u min   
-			if $offline_dur >= $MAX_OFFLINE {
-				shutdown
+			set offline ((v offline) + 1min)
+			if (v offline) > $MAX_OFFLINE {
+				block
+			} else if (v offline) == $MAX_OFFLINE {
+				notify
 			}
 		}
-		sleep (random int 45..75 | into duration -u sec)
+		sleep 1min
 	}
 }
 
-
-def "main list-timezones" [] {
+def "main list-timezones" []: nothing -> table<timezone: string> {
 	date list-timezone
+}
+
+def "set" [field: string, value: any] nothing -> nothing {
+	open $data_file | update $field $value | save -f $data_file
+}
+
+def v [field: string]: nothing -> any {
+	open $data_file | get $field
+}
+
+def block []: nothing -> nothing {
+	if (sys host).uptime >= 3min {
+		$USERS  | each {
+			let user: string = $in
+			print $"User \"($user)\" is terminated."
+			try { loginctl kill-user $user }
+			try { systemctl suspend }
+		}
+	}
 }
