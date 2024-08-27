@@ -4,7 +4,7 @@ For now, it's not a proper Nix package, just a bunch of configuration options al
 
 ## Features
 
-- Downtime: Block your computer from opening outside of specified working hours.
+- Downtime: Block your computer outside of specified working hours, by terminating your user's session and sleeping the computer.
 - URL Blocklist: Block specified URLs in Chromium and Firefox.
 
 ## Requirements
@@ -25,7 +25,7 @@ In order to achieve this and still be able to be root and do system modification
 <pre><code>users.users.&lt;name&gt;.extraGroups = [ <span style="text-decoration: line-through;">wheel</span> ]
 </code></pre>
 
-3. (*Optional*) Install [distrobox](https://distrobox.it/). Distrobox allows the creation of Linux containers as easily as "`distrobox enter debian`". This allows you to be dropped into any Linux distribution and be able to install software on it while having screen time features on the host machine. Also recommended is to install and learn [podman](https://podman.io/) too, to serve as a rootless backend for distrobox. (Using Docker as a rootless backend is very cumbersome.)
+3. (*Suggestion*) Install [distrobox](https://distrobox.it/). Distrobox allows the creation of Linux containers as easily as "`distrobox enter debian`". This allows you to be dropped into any Linux distribution and be able to install software on it while having screen time features active on the host machine. Also check out [podman](https://podman.io/).
 
 ### 2. Constant connectivity
 
@@ -38,13 +38,9 @@ The script `screentime.nu` won't trust system clock unless you are online, to pr
 sudo git clone "https://github.com/rayanamal/screentime-nixos.git"
 ```
 
-2. Edit the constants at the start of the `screentime.nu` file:
-	- `TIMEZONE`: Set your timezone.
-	- `ALLOWED_HOURS`: Your productive hours. You'll be able to use your computer in this time range. 
-	- `EXTRA_MINS`: Allowed maxiumum extra time per day. You'll be able to use your computer outside of `ALLOWED_HOURS` for the duration specified here. Intended to be used for emergencies. 
-	- `MAX_OFFLINE`: Allowed maximum offline usage time. You'll be allowed to use the computer when offline for the duration specifed here.
+2. Set the configuration options at the start of the `screentime.nu` file.
 
-You're given 5 minutes every time you boot independent of all these settings.
+You're given 3 minutes every time you boot independent of all the options.
 
 3. Change the cloned repository's ownership to `root` if it's not already:
 
@@ -117,6 +113,8 @@ Let me know how this project worked (or didn't) for you!
 
 This project is open to contributions.
 
-## TODOs
+## Notes to myself
 
 - We can rebuild nixos with the same delay (after change of configuration.nix) that is in the password and impulse control will work without the user ever needing to unlock root access.
+- Through the use of a USB-capable external device like Raspberry Pi Pico W, we can also prevent the user from changing the BIOS system time: The device can set and store the BIOS password. This would allow us to trust the system clock even when offline. Such a device can further be developed into a unified interface for holding the Screen Time PINs/root account passwords of all kinds of devices including phones. It could also enable self-hosting the timelock part in a non-compute-intensive manner by acting as a password vault and not requiring a timelock, while also supporting external backing up of these passwords in their timelocked form. It could present a UI over Wi-Fi. This device could also act as a hardware key for unlocking a LUKS-encrypted PC, preventing the user from booting the device from a live USB drive and disabling the screentime program on the PC.
+- If Screen Time features are compiled into a custom Linux kernel, the user can have root access too and Screen Time features will still work. Unless the root user can change the kernel, which I believe it can. Though this will be totally overkill.
