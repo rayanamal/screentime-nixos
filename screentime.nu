@@ -8,7 +8,6 @@ const USERS: list<string> = []
 # Examples: 
 # - ['alice']
 # - ['bob' 'carl' 'dan']    
-# Note that there's no comma between list items!
 
 const ALLOWED_HOURS = 6..16
 # Hour range in which the device can be used. Examples:
@@ -31,9 +30,12 @@ const EXTRA_MINS: duration = 30min
 const LIMIT_RESET_HOUR: string = "6am"
 # The hour at which the extra time and offline time limit counters reset every day.
 
-# const DIR: path = '/var/lib/screentime-nixos'
-const DIR: path = './hehe/'
+const DIR: path = '/var/lib/screentime-nixos'
+# const DIR: path = 'test/' # for testing
 # The directory in which data files are saved.
+
+# The duration after boot in which time limits are disabled.
+const AFTER_BOOT: duration = 3min
 
 -----------------------------------------------------------
 
@@ -44,22 +46,24 @@ if not ($data_file | path exists) {
 	{ 
 		extra: 0min, 
 		offline: 0min,
+		offline_block_counter: 0,
 		last_reset: ($LIMIT_RESET_HOUR | into datetime | into int)
 	} | save $data_file
 }
 
 def main [] nothing -> nothing {
-	alias notify = try { notify -a "screentime-nixos" -s "1 minute left to termination" -t "Your user session will be terminated in 60 seconds." --timeout 60sec }
-	notify
+	# alias notify = try { notify -a "screentime-nixos" -s "1 minute left to termination" -t "Your user session will be terminated in 60 seconds." --timeout 60sec }
+	# notify
 
 	let last_reset = (v last_reset | into datetime)
 	mut next_reset = $last_reset + 1day
 
 	loop {
-		let online: bool = try {
-				ping -c 1 8.8.8.8 | ignore
-				true
-			} catch { false }
+		let online: bool = (
+			ping -c 3 8.8.8.8
+			| complete
+			| $in.exit_code == 0
+		)
 		if $online {
 			let hour: int = (date now | format date '%H' | into int)
 			if $hour not-in $ALLOWED_HOURS {
@@ -67,7 +71,7 @@ def main [] nothing -> nothing {
 				if (v extra) == 1min or (v extra) > $EXTRA_MINS {
 					block
 				} else if (v extra) == $EXTRA_MINS {
-					notify
+					# notify
 				}
 			}
 			if (date now) > $next_reset {
@@ -79,12 +83,18 @@ def main [] nothing -> nothing {
 		} else if not $online {
 			set offline ((v offline) + 1min)
 			if (v offline) > $MAX_OFFLINE {
-				block
+				if (v offline_block_counter) == 3 {
+					set offline_block_counter 0
+					block
+				} else {
+					set offline_block_counter ((v offline_block_counter) + 1)
+				}
 			} else if (v offline) == $MAX_OFFLINE {
-				notify
+				# notify
 			}
 		}
-		sleep 1min
+		sleep (1min - (2sec + 40ms))
+		# sleep 100ms # for testing
 	}
 }
 
@@ -101,7 +111,8 @@ def v [field: string]: nothing -> any {
 }
 
 def block []: nothing -> nothing {
-	if (sys host).uptime >= 3min {
+	# print "User is blocked." ; exit # for testing
+	if (sys host).uptime >= $AFTER_BOOT {
 		$USERS  | each {
 			let user: string = $in
 			print $"User \"($user)\" is terminated."

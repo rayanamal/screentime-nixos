@@ -1,0 +1,3 @@
+- Currently last reset date is increased only 1 day at a time. This is incorrect.
+- Adopt a build system instead of `# for testing` comments
+- Notify support
