@@ -1,3 +1,5 @@
 - Currently last reset date is increased only 1 day at a time. This is incorrect.
-- Adopt a build system instead of `# for testing` comments
-- Notify support
+- Adopt a build system instead of `# for testing` comments. Depman?
+- Notify support.
+- Remove the block counters if there is no need.
+- It is a real problem to not be able to run offline. Solving that somehow would be really nice.

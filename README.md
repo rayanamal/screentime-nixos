@@ -1,11 +1,11 @@
 Screen Time features for NixOS. 
 
-For now, it's not a proper Nix package, just a bunch of configuration options along with a script.
+It's not a proper Nix package, just a bunch of configuration options along with a script.
 
 ## Features
 
-- Downtime: Block your computer outside of specified working hours, by terminating your user's session and sleeping the computer.
-- URL Blocklist: Block specified URLs in Chromium and Firefox.
+- Downtime: Block your computer outside of specified working hours. (Terminates the user session & sleeps the computer.)
+- URL Blocklist: Block specified domains at DNS level.
 
 ## Requirements
 
@@ -70,34 +70,23 @@ Edit `path/to/repo/` to put the correct path to cloned repository.
 
 6. Add the following to your `configuration.nix`. Tailor the website list for your own browsing habits.
 ```nix
-  programs.chromium = { 
-    enable = true;
-    extraOpts = {
-      "URLBlocklist" = [
-        "news.ycombinator.com"
-        "youtube.com"
-        "lobste.rs"
-        "reddit.com"
-      ];
-    };
-  };
-
-# Everything is blocked on Firefox, so that you don't use it
-  programs.firefox = {
-  	enable = true;
-    policies.WebsiteFilter = {
-      Block =  ["<all_urls>"];
-    };
-  };
+  networking.hosts = {
+    "127.0.0.1" = [
+      "news.ycombinator.com"
+      "reddit.com"
+      "x.com"
+      ...
+    ]
+  }
 ```
 
-  If you prefer Firefox as your main browser, refer to the respective documentation for configuring url blocklists: [Firefox](https://mozilla.github.io/policy-templates/#websitefilter), [Chromium](https://chromeenterprise.google/intl/en_us/policies/#URLBlocklist).
-
-## Screen-timing your phone
+## Some unsolicited suggestions on screen-timing your phone
 If you want to use non-bypassable Screen Time measures found in this repo for your computer, it's possible you want to use them for your phone too. 
 - The easiest way to do that (especially if you're in the US and don't use apps like WhatsApp) is to get a [Light Phone](https://www.thelightphone.com/). 
 - If you absolutely can't do that, then the next best solution is to give someone you trust the Screen Time password on your phone. 
 - If you don't have anyone you can trust (which is arguably an even bigger problem that needs fixing!), you can [timelock](https://github.com/rayanamal/timelock) your Screen Time password and ask someone to enter (but not remember) the Screen Time password, or you can use various bluetooth/USB keyboard emulator apps and tools on various platforms to enter the password yourself without seeing it.
+- An emerging option is what the guys at https://techlockdown.com are doing. I haven't tried it yet though, but it's clear they got the idea that screen time restrictions need to be without bypasses for some people.
+- Even if it's not a total restriction, reflection apps like One Sec on iOS are scientifically proven to work to some degree.
 
 ## Notes
 
@@ -115,7 +104,7 @@ The paragraphs striked out above are a good example of how *undiagnosed* ADHD le
 
 Let me know how this project worked (or didn't) for you!
 
-This project is open to contributions.
+Let me know before you make a PR, I won't accept every feature request.
 
 ## Notes to myself
 
